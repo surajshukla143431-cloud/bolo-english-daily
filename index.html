@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2B4BEA">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bolo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Bolo English Daily</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout concept: one-column practice studio. Accent-filled "riyaaz" hero on Today, quiet surfaces elsewhere.
+   Bottom tab bar on phones, inline tabs on desktop. Chat shows each learner line with its correction card beneath. */
+:root{
+  --bg:#F2F4F0; --surface:#FFFFFF; --surface2:#E8ECE6; --ink:#121A16; --ink2:#4A574F; --line:#D5DBD2;
+  --accent:#2B4BEA; --accent-ink:#FFFFFF; --accent-soft:#E3E8FE;
+  --warm:#C98400; --warm-soft:#FBEFCF;
+  --good:#17803D; --good-soft:#DDF3E4; --bad:#C23B2E; --bad-soft:#FBE4E1;
+  --font-display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;
+  --font-body:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --navh:60px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1411; --surface:#161E19; --surface2:#1E2822; --ink:#E9EFEA; --ink2:#9BAA9F; --line:#2A362E;
+  --accent:#8CA2FF; --accent-ink:#0B1030; --accent-soft:#1C2548;
+  --warm:#F2B84A; --warm-soft:#33280F;
+  --good:#58C77F; --good-soft:#15301E; --bad:#FF8A7D; --bad-soft:#3A1A17; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0E1411; --surface:#161E19; --surface2:#1E2822; --ink:#E9EFEA; --ink2:#9BAA9F; --line:#2A362E;
+  --accent:#8CA2FF; --accent-ink:#0B1030; --accent-soft:#1C2548;
+  --warm:#F2B84A; --warm-soft:#33280F;
+  --good:#58C77F; --good-soft:#15301E; --bad:#FF8A7D; --bad-soft:#3A1A17; color-scheme:dark;}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--font-body);margin:0;
+  padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(var(--navh) + env(safe-area-inset-bottom,0px) + 28px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.shell{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+h1,h2,h3{font-family:var(--font-display);margin:0;line-height:1.1;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+.mono{font-family:var(--font-mono)}
+.muted{color:var(--ink2)}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.ico{display:inline-flex;width:20px;height:20px;flex:none}
+.ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand b{font:800 26px/1 var(--font-display);letter-spacing:-.02em}
+.brand span{font-size:12px;color:var(--ink2);font-weight:600}
+.chips{display:flex;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.pill.streak{color:var(--warm);background:var(--warm-soft);border-color:transparent}
+.pill .ico{width:16px;height:16px}
+
+/* nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px max(10px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-right,0px))}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:6px 4px;border-radius:12px;font-size:12px;font-weight:600;color:var(--ink2);min-height:48px}
+.nav button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
+@media (min-width:820px){
+  :root{--navh:0px}
+  body{padding-block:22px 56px}
+  .nav{position:static;order:2;display:flex;justify-content:flex-start;background:none;border:0;padding:0;gap:6px}
+  .nav button{flex-direction:row;gap:8px;padding:8px 14px;font-size:14px;min-height:0}
+  .shell{display:flex}
+  .top{order:1}
+  main{order:3}
+}
+
+/* generic */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.view{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:10px 16px;font-weight:700;min-height:44px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.good{background:var(--good);color:#fff;border-color:transparent}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:14px}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);flex:none}
+.icon-btn.on{background:var(--bad);color:#fff;border-color:transparent;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--bad) 25%,transparent)}}
+@media (prefers-reduced-motion:reduce){.icon-btn.on{animation:none}}
+.back{align-self:flex-start;border:0;background:none;display:inline-flex;gap:6px;align-items:center;color:var(--ink2);font-weight:700;padding:6px 0;min-height:44px}
+.chip-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.chip-btn{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 14px;font-weight:600;font-size:14px;min-height:36px}
+.chip-btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+
+/* hero */
+.hero{background:var(--accent);color:var(--accent-ink);border-radius:22px;padding:22px 20px;display:flex;flex-direction:column;gap:14px}
+.hero h1{font-size:clamp(30px,8vw,44px);font-weight:800}
+.hero .eyebrow{color:inherit;opacity:.8}
+.segs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.segs i{height:8px;border-radius:4px;background:currentColor;opacity:.28}
+.segs i.on{opacity:1}
+.hero .meta{display:flex;justify-content:space-between;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+
+/* tasks */
+.tasks{display:flex;flex-direction:column;gap:10px}
+.task{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;width:100%}
+.task .tic{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.task.done .tic{background:var(--good-soft);color:var(--good)}
+.task b{display:block;font-weight:700}
+.task small{display:block;color:var(--ink2);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.task .txt{min-width:0}
+.task .xp{font:600 12px var(--font-mono);color:var(--ink2);text-align:right}
+.task.done .xp{color:var(--good)}
+
+/* composer */
+.composer{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.composer .line{display:flex;gap:8px;align-items:flex-end}
+.ta{flex:1;min-width:0;resize:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;min-height:44px;max-height:180px}
+.cnote{font-size:13px;color:var(--ink2);min-height:18px;padding:0 4px}
+.sticky-comp{position:sticky;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 8px);z-index:5}
+@media (min-width:820px){.sticky-comp{bottom:12px}}
+
+/* word / task cards */
+.bigword{font:800 clamp(34px,9vw,52px)/1 var(--font-display)}
+.say{font-family:var(--font-mono);font-size:15px;color:var(--accent)}
+.sent{font:600 clamp(20px,5vw,26px)/1.3 var(--font-display)}
+.words{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:20px;font-weight:600}
+.words span{padding:2px 8px;border-radius:8px}
+.words .ok{background:var(--good-soft);color:var(--good)}
+.words .miss{background:var(--bad-soft);color:var(--bad);text-decoration:underline wavy}
+.clock{font:700 46px/1 var(--font-mono);font-variant-numeric:tabular-nums}
+.clock.over{color:var(--bad)}
+.tip{background:var(--surface2);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--ink2)}
+
+/* feedback */
+.fb{display:flex;flex-direction:column;gap:10px}
+.verdict{display:inline-flex;align-self:flex-start;gap:6px;align-items:center;padding:4px 12px;border-radius:99px;font-weight:700;font-size:14px}
+.verdict.ok{background:var(--good-soft);color:var(--good)}
+.verdict.no{background:var(--warm-soft);color:var(--warm)}
+.fixed{background:var(--good-soft);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.fixed p{font-weight:600}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.mist{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--line)}
+.mist .w{color:var(--bad);text-decoration:line-through;text-decoration-thickness:2px}
+.mist .r{color:var(--good);font-weight:700}
+.mist .why{font-size:14px;color:var(--ink2)}
+.scores{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media (min-width:560px){.scores{grid-template-columns:repeat(4,1fr)}}
+.score{background:var(--surface2);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.score b{font:800 28px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.score b small{font-size:14px;color:var(--ink2);font-weight:600}
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+
+/* chat */
+.chatlist{display:flex;flex-direction:column;gap:12px}
+.b{max-width:88%;padding:10px 14px;border-radius:18px;display:flex;gap:10px;align-items:flex-start;overflow-wrap:anywhere}
+.b.coach{background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:6px;align-self:flex-start}
+.b.me{background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:6px;align-self:flex-end}
+.b .ico{width:18px;height:18px}
+.b button.spk{border:0;background:none;color:var(--accent);padding:2px;margin-top:2px;min-width:28px;min-height:28px}
+.corr{align-self:flex-end;width:min(100%,92%);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.corr .perfect{color:var(--good);font-weight:700}
+.dots{display:inline-flex;gap:4px;padding:6px 0}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--ink2);opacity:.5;animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none}}
+.notice{background:var(--warm-soft);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:14px}
+
+/* notebook */
+.nb{display:flex;flex-direction:column;gap:8px}
+.nbi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+.nbi.mastered{opacity:.6}
+.nbi .txt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.flash{align-items:stretch;text-align:left;gap:14px}
+
+/* progress */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media (min-width:560px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.stat b{font:800 30px/1.1 var(--font-display);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--ink2)}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:140px}
+.bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.bar .col{width:100%;max-width:36px;border-radius:8px 8px 3px 3px;background:var(--accent);min-height:4px}
+.bar .col.zero{background:var(--line)}
+.bar small{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.badge{border:1px dashed var(--line);border-radius:14px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:2px;color:var(--ink2)}
+.badge.on{border-style:solid;border-color:transparent;background:var(--accent-soft);color:var(--ink)}
+.badge b{font-weight:700}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.set{display:flex;flex-direction:column;gap:6px}
+pre.prompt{white-space:pre-wrap;word-break:break-word;background:var(--surface2);border-radius:12px;padding:12px;font:13px/1.5 var(--font-mono);margin:0;max-height:260px;overflow:auto}
+.prog{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent)}
+
+#toast{position:fixed;left:0;right:0;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 76px);display:flex;justify-content:center;pointer-events:none;z-index:50;padding:0 16px}
+#toast div{background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+[hidden]{display:none!important}
+html{color-scheme:light dark}
+</style>
+</head><body>
+<div class="shell" id="shell">
+  <header class="top" id="top"></header>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <main id="main"></main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- tiny helpers ---------- */
+const $=(s,el=document)=>el.querySelector(s);
+function h(tag,props,...kids){
+  const el=document.createElement(tag);
+  for(const [k,v] of Object.entries(props||{})){
+    if(v==null||v===false) continue;
+    if(k==='class') el.className=v;
+    else if(k.startsWith('on')) el.addEventListener(k.slice(2),v);
+    else if(v===true) el.setAttribute(k,'');
+    else el.setAttribute(k,v);
+  }
+  for(const kid of kids.flat(Infinity)){
+    if(kid==null||kid===false) continue;
+    el.append(kid.nodeType?kid:document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const ICONS={
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  speaker:'<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/>',
+  send:'<path d="M4 12l16-8-6 16-3-7-7-1z"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  flame:'<path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/>',
+  home:'<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>',
+  chat:'<path d="M4 5h16v11H9l-5 4z"/>',
+  book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M8 4v13"/>',
+  chart:'<path d="M5 20V10M12 20V4M19 20v-7"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  copy:'<rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 16V6a2 2 0 0 1 2-2h8"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  word:'<path d="M4 18l5-13 5 13M6 14h6M17 8h3M17 12h3M17 16h3"/>',
+  ear:'<path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a2.5 2.5 0 0 1-5 0M9.5 9a2.5 2.5 0 0 1 5 0"/>',
+  swap:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+  timer:'<circle cx="12" cy="13" r="7"/><path d="M12 9v4l2 2M9 3h6"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 6"/>',
+  turtle:'<path d="M3 15c0-4 4-7 9-7s9 3 9 7zM6 15v3M17 15v3M21 11l2-1"/>'
+};
+const icon=n=>{const s=document.createElement('span');s.className='ico';s.setAttribute('aria-hidden','true');s.innerHTML='<svg viewBox="0 0 24 24">'+(ICONS[n]||'')+'</svg>';return s;};
+
+/* ---------- content ---------- */
+const WORDS=[
+ ['persistent','adj','per-SIS-tent','lagatar koshish karne wala; haar na manne wala','She is persistent, so she never gives up.'],
+ ['reluctant','adj','ri-LUK-tent','hichkichata hua; mann na hona','He was reluctant to speak in the meeting.'],
+ ['thorough','adj','THUR-oh','poora aur dhyan se kiya hua','Please do a thorough check before you send it.'],
+ ['postpone','verb','poh-st-POHN','aage taalna; sthagit karna','We had to postpone the trip because of the rain.'],
+ ['approximately','adv','uh-PROK-si-mit-lee','lagbhag; takreeban','The journey takes approximately two hours.'],
+ ['convenient','adj','kun-VEEN-yunt','suvidha wala; aasaan','Is Monday convenient for you?'],
+ ['recommend','verb','rek-uh-MEND','sifarish karna; salah dena','I recommend this book to everyone.'],
+ ['improve','verb','im-PROOV','sudhaarna; behtar banana','I want to improve my speaking every day.'],
+ ['confident','adj','KON-fi-dent','aatmavishwas se bhara','Speak in a confident voice.'],
+ ['opportunity','noun','op-er-TYOO-ni-tee','mauka','This job is a great opportunity for me.'],
+ ['responsibility','noun','ri-spon-si-BIL-i-tee','zimmedari','Taking care of the team is my responsibility.'],
+ ['comfortable','adj','KUMF-ter-bul','aaramdayak; sehaj','I am comfortable speaking with my friends.'],
+ ['available','adj','uh-VAY-luh-bul','uplabdh; free','Are you available tomorrow afternoon?'],
+ ['definitely','adv','DEF-i-nit-lee','bilkul; zaroor','I will definitely call you tonight.'],
+ ['struggle','verb','STRUG-ul','mushkil se jujhna','I struggle with long sentences.'],
+ ['achieve','verb','uh-CHEEV','hasil karna','You can achieve your goal with daily practice.'],
+ ['hesitate','verb','HEZ-i-tayt','jhijhakna','Please do not hesitate to ask questions.'],
+ ['expensive','adj','ik-SPEN-siv','mehenga','This phone is too expensive for me.'],
+ ['suggestion','noun','suh-JES-chun','sujhav','Do you have any suggestion for me?'],
+ ['familiar','adj','fuh-MIL-yer','jaana-pehchana','This song sounds familiar.'],
+ ['require','verb','ri-KWY-er','zaroorat hona; maangna','This job requires good communication skills.'],
+ ['attend','verb','uh-TEND','shaamil hona; haazir hona','I will attend the class on Friday.'],
+ ['deliver','verb','di-LIV-er','pahunchana; dena','They deliver the food in thirty minutes.'],
+ ['nervous','adj','NUR-vus','ghabraya hua','I feel nervous before every interview.'],
+ ['fluent','adj','FLOO-ent','dhaaraapravah bolne wala','She is fluent in three languages.'],
+ ['pronounce','verb','pruh-NOUNS','uchaaran karna','How do you pronounce this word?'],
+ ['appreciate','verb','uh-PREE-shee-ayt','kadar karna; sarahna','I really appreciate your help.'],
+ ['manage','verb','MAN-ij','sambhalna; kaabu karna','How do you manage your time?'],
+ ['decide','verb','di-SYDE','tay karna','We need to decide by Friday.'],
+ ['remind','verb','ri-MYND','yaad dilana','Please remind me to call him.']
+].map(a=>({word:a[0],pos:a[1],say:a[2],hi:a[3],ex:a[4]}));
+const SHADOW=[
+ 'Could you please speak a little slower?','I am looking forward to meeting you tomorrow.','Let me think about it and get back to you.',
+ 'I would like to order a cup of coffee, please.','Sorry, I did not catch that. Could you repeat it?','I have been learning English for a few months.',
+ 'What time does the meeting start?','I usually wake up early and go for a walk.','Thank you so much for your help today.',
+ 'Can you tell me how to get to the station?','I think it is a great idea, but we need more time.','She told me that she would be late.',
+ 'If I had more time, I would practice every day.','We should finish this before the deadline.','I am not sure, but I will check and let you know.',
+ 'It was nice talking to you. Have a great day!','Do you mind if I open the window?','I am planning to travel to Goa next month.',
+ 'He has been working here for five years.','Please send me the details by email.'
+];
+const TRANS=[
+ ['Mujhe kal subah jaldi uthna hai.','I have to wake up early tomorrow morning.'],
+ ['Kya aap mujhe raasta bata sakte hain?','Could you tell me the way?'],
+ ['Main pichle do saal se Delhi mein rehta hoon.','I have been living in Delhi for the last two years.'],
+ ['Mujhe chai se zyada coffee pasand hai.','I like coffee more than tea.'],
+ ['Meeting aadhe ghante ke liye taal do.','Postpone the meeting by half an hour.'],
+ ['Agar baarish hui toh hum nahi jayenge.','If it rains, we will not go.'],
+ ['Usne mujhe bataya ki woh busy hai.','He told me that he is busy.'],
+ ['Mujhe apni English sudharni hai.','I want to improve my English.'],
+ ['Tum itni der se kyun aaye?','Why did you come so late?'],
+ ['Mera phone kal se kharab hai.','My phone has not been working since yesterday.'],
+ ['Mujhe lagta hai ki yeh achha idea hai.','I think this is a good idea.'],
+ ['Kripya mujhe ek glass paani dijiye.','Please give me a glass of water.'],
+ ['Main abhi khana kha raha hoon.','I am having my meal right now.'],
+ ['Kya tumne kabhi Mumbai dekha hai?','Have you ever been to Mumbai?'],
+ ['Hum dono ek hi college mein padhte the.','We both studied in the same college.'],
+ ['Mujhe sir dard ho raha hai.','I have a headache.'],
+ ['Woh mujhse zyada tez daudta hai.','He runs faster than me.'],
+ ['Zara dheere bolo, mujhe samajh nahi aaya.','Please speak slowly, I did not understand.'],
+ ['Main kal tak report bhej dunga.','I will send the report by tomorrow.'],
+ ['Humein time par pahunchna chahiye.','We should reach on time.']
+].map(a=>({hi:a[0],en:a[1]}));
+const TOPICS=[
+ 'Describe your daily routine.','Talk about your best friend.','What did you do last weekend?','Describe your favourite food and how it is made.',
+ 'Why do you want to improve your English?','Talk about a place you want to visit.','Describe your city to a foreigner.','Your dream job and why you want it.',
+ 'A festival you love and how you celebrate it.','A problem you solved recently.','Your favourite movie and why you like it.','A good habit you want to build.',
+ 'Talk about your family.','How do you use your phone every day?','Describe a memorable trip.','A person who inspires you.',
+ 'Why is English useful in life?','How do you stay healthy?','Where do you see yourself in five years?','Describe your workplace or college.'
+];
+const SCEN=[
+ {id:'free',name:'Free talk',desc:'a relaxed friendly chat about everyday life',open:'Hi! I am your English coach. How was your day so far?'},
+ {id:'interview',name:'Job interview',desc:'a job interview where you are the interviewer and the learner is the candidate',open:'Good morning! Please have a seat. Tell me a little about yourself.'},
+ {id:'office',name:'Office meeting',desc:'a team meeting at an office; you are the manager',open:'Let us start the meeting. Can you give us a quick update on your project?'},
+ {id:'restaurant',name:'Restaurant',desc:'a restaurant; you are the waiter',open:'Welcome! A table for how many? Here is the menu.'},
+ {id:'travel',name:'Airport',desc:'an airport check-in counter; you are the airline staff',open:'Good afternoon. May I see your passport and boarding pass, please?'},
+ {id:'friend',name:'New friend',desc:'meeting a new person at a party',open:'Hey, I do not think we have met. I am Sam. What is your name, and what do you do?'},
+ {id:'phone',name:'Customer call',desc:'a customer support phone call; you are the support agent',open:'Thank you for calling Skyline Support. How can I help you today?'}
+];
+const XP={w:10,s:15,t:15,k:30,r:30};
+const LEVELS={beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced'};
+
+/* ---------- state + persistence ---------- */
+const DEF=()=>({v:1,level:'intermediate',explain:'hinglish',accent:'en-IN',autoSpeak:true,rate:0.9,xp:0,streak:0,best:0,lastDay:'',days:{},mistakes:[],counts:{},updated:0,apiKey:'',modelQuick:'',modelMain:''});
+let S=Object.assign(DEF(),loadLocal()||{});
+function loadLocal(){try{const r=localStorage.getItem('bolo-v1');return r?JSON.parse(r):null;}catch(e){return null;}}
+function save(){
+  S.updated=Date.now();
+  const keys=Object.keys(S.days).sort();while(keys.length>150){delete S.days[keys.shift()];}
+  try{localStorage.setItem('bolo-v1',JSON.stringify(S));}catch(e){}
+}
+/* ---- Claude API (your own key, called straight from this phone) ---- */
+const API_URL='https://api.anthropic.com/v1/messages';
+const getKey=()=>String(S.apiKey||'').trim();
+const aiReady=()=>!!getKey();
+const MODELS=()=>({quick:(S.modelQuick||'').trim()||'claude-haiku-5-5',main:(S.modelMain||'').trim()||'claude-sonnet-5-5'});
+function mergeTurns(turns){const out=[];for(const t of turns){if(out.length&&out[out.length-1].role===t.role) out[out.length-1].content+='\n\n'+t.content;else out.push({role:t.role,content:t.content});}return out;}
+async function callClaude(input,o){
+  const key=getKey();if(!key) throw {code:'no_key'};
+  const messages=mergeTurns(typeof input==='string'?[{role:'user',content:input}]:input);
+  const body={model:MODELS()[o.tier==='quick'?'quick':'main'],max_tokens:o.max||1024,messages,stream:!!o.onText};
+  let res;
+  try{res=await fetch(API_URL,{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});}
+  catch(e){throw {code:'offline'};}
+  if(!res.ok){throw {code:(res.status===401||res.status===403)?'bad_key':res.status===429?'rate_limited':res.status===404?'bad_model':res.status===402?'no_credit':'upstream_error',status:res.status};}
+  if(!o.onText){const j=await res.json();return (j.content||[]).map(c=>c.text||'').join('');}
+  const reader=res.body.getReader(),dec=new TextDecoder();let buf='',text='';
+  for(;;){
+    const {done,value}=await reader.read();if(done) break;
+    buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
+    for(const ln of lines){
+      if(!ln.startsWith('data:')) continue;const d=ln.slice(5).trim();if(!d) continue;
+      try{const ev=JSON.parse(d);if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.type==='text_delta'){text+=ev.delta.text;o.onText({text,delta:ev.delta.text});}}catch(e){}
+    }
+  }
+  if(!text.trim()) throw {code:'upstream_error'};
+  return text;
+}
+
+/* ---------- date + game logic ---------- */
+const pad=n=>String(n).padStart(2,'0');
+function dkey(d=new Date()){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function dayNum(){const d=new Date();return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);}
+const pick=(arr,off=0)=>arr[(dayNum()+off)%arr.length];
+function dayRec(k){if(!S.days[k]) S.days[k]={xp:0,secs:0,done:[]};return S.days[k];}
+function curStreak(){const t=dkey(),y=dkey(new Date(Date.now()-864e5));return (S.lastDay===t||S.lastDay===y)?S.streak:0;}
+function addXP(n){
+  const k=dkey(),d=dayRec(k);d.xp+=n;S.xp+=n;
+  if(S.lastDay!==k){const y=dkey(new Date(Date.now()-864e5));S.streak=S.lastDay===y?S.streak+1:1;S.lastDay=k;S.best=Math.max(S.best||0,S.streak);}
+  save();refreshChips();
+}
+function markDone(id){
+  const d=dayRec(dkey());if(d.done.includes(id)) return false;
+  d.done.push(id);S.counts[id]=(S.counts[id]||0)+1;addXP(XP[id]);toast('+'+XP[id]+' XP');
+  if(d.done.length>=5) setTimeout(()=>toast('Aaj ka goal poora! Shabaash.'),1900);
+  return true;
+}
+const isDone=id=>dayRec(dkey()).done.includes(id);
+function level(){const xp=S.xp;const n=Math.floor(Math.sqrt(xp/25))+1;const lo=25*(n-1)*(n-1),hi=25*n*n;return {n,pct:Math.round(100*(xp-lo)/(hi-lo)),next:hi-xp};}
+function addMistakes(list){
+  let added=0;
+  for(const m of list){
+    const wrong=String(m.wrong||'').trim(),right=String(m.right||'').trim();
+    if(!wrong||!right||wrong.toLowerCase()===right.toLowerCase()) continue;
+    const key=(wrong+'|'+right).toLowerCase();
+    if(S.mistakes.some(x=>(x.wrong+'|'+x.right).toLowerCase()===key)) continue;
+    S.mistakes.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2,6),wrong,right,why:String(m.why||'').trim(),ts:Date.now(),done:false});added++;
+  }
+  if(S.mistakes.length>300) S.mistakes.length=300;
+  if(added) save();
+  return added;
+}
+function toast(msg){
+  const box=$('#toast');const el=h('div',{},msg);box.replaceChildren(el);
+  clearTimeout(toast.t);toast.t=setTimeout(()=>{if(el.parentNode) el.remove();},2400);
+}
+
+/* ---------- speech ---------- */
+let voices=[];
+function loadVoices(){try{voices=speechSynthesis.getVoices();}catch(e){}}
+if('speechSynthesis' in window){loadVoices();try{speechSynthesis.addEventListener('voiceschanged',loadVoices);}catch(e){}}
+function pickVoice(){
+  for(const p of [S.accent,'en-IN','en-GB','en-US']){const v=voices.find(v=>v.lang.replace('_','-')===p);if(v) return v;}
+  return voices.find(v=>/^en/i.test(v.lang))||null;
+}
+function speak(text,rate){
+  if(!('speechSynthesis' in window)||!text) return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=pickVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang=S.accent;u.rate=rate||S.rate;speechSynthesis.speak(u);}catch(e){}
+}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function makeMic(ta,note){
+  let rec=null,on=false,base='',heard=false;
+  const btn=h('button',{class:'icon-btn',type:'button','aria-label':'Mic se bolo','aria-pressed':'false'},icon('mic'));
+  const api={el:btn,used:false};
+  function setOn(v){on=v;btn.classList.toggle('on',v);btn.setAttribute('aria-pressed',String(v));}
+  api.stop=function(){try{rec&&rec.stop();}catch(e){}setOn(false);};
+  api.start=function(){
+    if(on) return;
+    if(!SR){note('Is browser mein mic typing nahi hai. Apne keyboard ka mic (voice typing) dabakar bolein.');ta.focus();return;}
+    try{
+      rec=new SR();rec.lang=S.accent;rec.interimResults=true;rec.continuous=true;heard=false;
+      base=ta.value.trim()?ta.value.trim()+' ':'';
+      rec.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++) t+=e.results[i][0].transcript;heard=true;api.used=true;ta.value=base+t.trim();ta.dispatchEvent(new Event('input'));};
+      rec.onerror=e=>{setOn(false);
+        if(e.error==='not-allowed'||e.error==='service-not-allowed') note('Is page mein mic block hai. Keyboard ke mic (voice typing) se bolein, text yahin likh jayega.');
+        else if(e.error==='no-speech') note('Kuch sunai nahi diya. Dobara try karein.');
+        else if(e.error!=='aborted') note('Mic error: '+e.error);};
+      rec.onend=()=>{setOn(false);if(heard) note('Bol diya. Text check karke bhejein.');};
+      rec.start();setOn(true);note('Sun raha hoon... ab bolein.');
+    }catch(e){setOn(false);note('Mic start nahi hua. Keyboard ke mic se bolein.');}
+  };
+  btn.addEventListener('click',()=>on?api.stop():api.start());
+  return api;
+}
+function composer(o){
+  const ta=h('textarea',{class:'ta',id:'ta-'+o.id,rows:o.rows||2,placeholder:o.placeholder,'aria-label':o.placeholder,autocomplete:'off',autocapitalize:'sentences',spellcheck:'false'});
+  const noteEl=h('div',{class:'cnote'},o.hint||'');
+  const note=m=>{noteEl.textContent=m;};
+  const mic=makeMic(ta,note);
+  const send=h('button',{class:'btn primary',type:'button',id:'send-'+o.id,'aria-label':o.sendLabel||'Bhejo'},icon('send'),o.sendLabel?h('span',{},o.sendLabel):null);
+  const grow=()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,180)+'px';};
+  ta.addEventListener('input',grow);
+  const doSend=()=>{const t=ta.value.trim();if(!t){note('Pehle kuch bolein ya likhein.');return;}mic.stop();o.onSend(t,api);};
+  send.addEventListener('click',doSend);
+  if(o.enterSends) ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&window.matchMedia('(min-width:820px)').matches){e.preventDefault();doSend();}});
+  const el=h('div',{class:'composer'+(o.sticky?' sticky-comp':'')},h('div',{class:'line'},ta,mic.el,send),noteEl);
+  const api={el,ta,mic,send,note,set(v){ta.value=v;grow();},busy(b){send.disabled=b;ta.disabled=b;}};
+  cleanups.push(()=>mic.stop());
+  return api;
+}
+
+/* ---------- AI coach ---------- */
+const expl=()=>S.explain==='hinglish'?'simple Hinglish (Hindi written in Roman letters, easy words)':'simple English';
+const lvlNote=()=>({beginner:'Use very simple words and short sentences (A1-A2).',intermediate:'Use clear everyday English (B1).',advanced:'Use natural English; mention idioms and phrasal verbs when useful (B2-C1).'}[S.level]);
+const ctx=()=>'The learner is a Hindi speaker from India practising spoken English, level '+S.level+'. Their text comes from speech or voice typing, so ignore capitalization, punctuation and speech-to-text spelling slips; judge only grammar, word choice, tense, prepositions, articles and natural phrasing. If they use Hindi words, give the English meaning. Write explanations in '+expl()+'.';
+async function coachChat(turns,opts){const text=await callClaude(turns,{tier:'quick',max:700,onText:opts&&opts.onText});return {text};}
+async function coachJSON(prompt){
+  const t=await callClaude(prompt+'\nReply with ONLY the JSON object, no other text.',{tier:'main',max:1600});
+  const i=t.indexOf('{'),j=t.lastIndexOf('}');
+  try{return JSON.parse(t.slice(i,j+1));}catch(e){throw {code:'invalid_json'};}
+}
+function errCopy(e){
+  const c=e&&e.code;
+  return {no_key:'Pehle Progress tab mein apni Claude API key daalein.',bad_key:'API key galat hai ya band ho gayi. Progress tab mein check karein.',no_credit:'API account mein credit khatam hai. console.anthropic.com par check karein.',rate_limited:'Bahut jaldi-jaldi requests ho gayi. Thodi der baad try karein.',offline:'Internet connect nahi hai. Check karke dobara try karein.',bad_model:'Model ka naam galat hai. Progress tab mein Advanced model names khali chhod dein.',invalid_json:'Feedback samajh nahi aaya. Ek baar aur try karein.'}[c]||'Connection mein dikkat aayi. Dobara try karein.';
+}
+function parseTutor(t){
+  const out={fixed:'',mistakes:'',better:'',tip:'',reply:''};
+  const re=/(^|\n)[ \t]*\**(FIXED|MISTAKES|BETTER|TIP|REPLY)\**[ \t]*:/g;let m;const idx=[];
+  while((m=re.exec(t))) idx.push({k:m[2].toLowerCase(),s:m.index,e:re.lastIndex});
+  idx.forEach((x,i)=>{out[x.k]=t.slice(x.e,i+1<idx.length?idx[i+1].s:t.length).trim();});
+  if(!idx.length) out.reply=t.trim();
+  return out;
+}
+function parseMist(str){
+  const res=[];
+  for(let line of String(str||'').split('\n')){
+    line=line.replace(/^[\s\-•*]+/,'').trim();if(!line) continue;
+    const parts=line.split(/=>|→|->/);if(parts.length<2) continue;
+    const rest=parts.slice(1).join(' ').split('|');
+    res.push({wrong:parts[0].trim().replace(/^["“]|["”]$/g,''),right:rest[0].trim().replace(/^["“]|["”]$/g,''),why:(rest[1]||'').trim()});
+  }
+  return res.slice(0,4);
+}
+
+/* ---------- routing ---------- */
+let route={v:'today'},cleanups=[];
+function go(v,p){
+  cleanups.forEach(f=>{try{f();}catch(e){}});cleanups=[];
+  try{speechSynthesis.cancel();}catch(e){}
+  route=Object.assign({v},p||{});render();window.scrollTo(0,0);
+}
+const TABS=[['today','Aaj','home'],['tutor','Coach','chat'],['notebook','Galtiyan','book'],['progress','Progress','chart']];
+function renderNav(){
+  const cur=['tutor','notebook','progress'].includes(route.v)?route.v:'today';
+  $('#nav').replaceChildren(...TABS.map(t=>h('button',{type:'button','aria-current':t[0]===cur?'page':null,onclick:()=>go(t[0])},icon(t[2]),h('span',{},t[1]))));
+}
+function renderTop(){
+  $('#top').replaceChildren(h('div',{class:'brand'},h('b',{},'Bolo'),h('span',{},'English daily')),h('div',{class:'chips',id:'chips'}));
+  refreshChips();
+}
+function refreshChips(){
+  const c=$('#chips');if(!c) return;
+  c.replaceChildren(h('span',{class:'pill streak','aria-label':curStreak()+' din ki streak'},icon('flame'),String(curStreak())),h('span',{class:'pill','aria-label':S.xp+' XP'},icon('star'),S.xp+' XP'));
+}
+function render(){
+  renderNav();
+  const main=$('#main');main.replaceChildren();
+  const fn={today:viewToday,tutor:viewTutor,notebook:viewNotebook,progress:viewProgress,word:taskWord,shadow:taskShadow,trans:taskTrans,talk:taskTalk}[route.v]||viewToday;
+  main.append(fn());
+}
+const backBtn=()=>h('button',{class:'back',type:'button',onclick:()=>go('today')},icon('back'),'Aaj ka riyaaz');
+const aiNotice=()=>h('div',{class:'notice','data-ainotice':'1',hidden:aiReady()},h('p',{style:'margin-bottom:8px'},'AI coach chalu karne ke liye apni Claude API key daalni hogi (ek baar). Bina key ke bhi shadowing, word aur awaaz wale tasks chalte hain.'),h('button',{class:'btn sm',type:'button',onclick:()=>go('progress')},'Key daalo'));
+function syncNotices(){document.querySelectorAll('[data-ainotice]').forEach(n=>{n.hidden=aiReady();});}
+
+/* ---------- Today ---------- */
+function getTasks(){
+  const w=pick(WORDS,0),s=pick(SHADOW,5),t=pick(TRANS,2),k=pick(TOPICS,3),r=pick(SCEN,1);
+  return [
+    {id:'w',view:'word',title:'Word of the day',sub:w.word+' · '+w.hi,xp:XP.w,min:2,ic:'word'},
+    {id:'s',view:'shadow',title:'Sunke bolo',sub:'"'+s+'"',xp:XP.s,min:3,ic:'ear'},
+    {id:'t',view:'trans',title:'Hinglish se English',sub:t.hi,xp:XP.t,min:3,ic:'swap'},
+    {id:'k',view:'talk',title:'60 second talk',sub:k,xp:XP.k,min:5,ic:'timer'},
+    {id:'r',view:'tutor',scenario:r.id,title:'Roleplay: '+r.name,sub:'Coach ke saath 4 messages',xp:XP.r,min:6,ic:'people'}
+  ];
+}
+function viewToday(){
+  const tasks=getTasks(),d=dayRec(dkey()),n=tasks.filter(t=>d.done.includes(t.id)).length;
+  const date=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
+  const hero=h('section',{class:'hero'},
+    h('div',{class:'eyebrow'},date),
+    h('h1',{},n>=5?'Aaj ka riyaaz poora':'Aaj ka riyaaz'),
+    h('div',{class:'segs','aria-hidden':'true'},tasks.map(t=>h('i',{class:d.done.includes(t.id)?'on':''}))),
+    h('div',{class:'meta'},h('span',{},n+' / 5 tasks'),h('span',{},d.xp+' XP aaj')));
+  const list=h('div',{class:'tasks'},tasks.map(t=>{
+    const done=d.done.includes(t.id);
+    return h('button',{class:'task'+(done?' done':''),type:'button',onclick:()=>go(t.view,t.scenario?{scenario:t.scenario}:{})},
+      h('span',{class:'tic'},icon(done?'check':t.ic)),
+      h('span',{class:'txt'},h('b',{},t.title),h('small',{},t.sub)),
+      h('span',{class:'xp'},done?'done':'+'+t.xp+' XP',h('br'),t.min+' min'));
+  }));
+  const free=h('div',{class:'card'},h('h3',{},'Kuch bhi bolna hai?'),h('p',{class:'muted'},'Coach se free baat karo. Har line ke neeche correction milega: sahi sentence, galti aur Hinglish mein wajah.'),
+    h('div',{class:'row'},h('button',{class:'btn primary',type:'button',onclick:()=>go('tutor')},icon('chat'),'Coach se baat karo')));
+  const how=h('div',{class:'tip'},h('b',{},'Bolne ke 2 tareeke. '),'1) Mic button dabakar seedha bolo (agar browser allow kare). 2) Mic block ho toh keyboard ke mic (voice typing) se bolo, text box mein likh jayega. Phir Bhejo dabao.');
+  return h('div',{class:'view'},hero,list,free,how,aiNotice());
+}
+
+/* ---------- feedback renderers ---------- */
+function mistNode(m){
+  return h('div',{class:'mist'},h('div',{},h('span',{class:'w'},m.wrong),' → ',h('span',{class:'r'},m.right)),m.why?h('div',{class:'why'},m.why):null);
+}
+function speakBtn(text,slow){return h('button',{class:'icon-btn',type:'button','aria-label':slow?'Dheere suno':'Suno',onclick:()=>speak(text,slow?0.65:null),style:'width:36px;height:36px'},icon(slow?'turtle':'speaker'));}
+function scoreNode(label,v){
+  const n=Number(v);const ok=isFinite(n);
+  return h('div',{class:'score'},h('span',{class:'lbl'},label),h('b',{},ok?String(Math.round(n)):'–',h('small',{},' /10')),h('div',{class:'meter'},h('i',{style:'width:'+(ok?Math.max(0,Math.min(10,n))*10:0)+'%'})));
+}
+
+/* ---------- Task: word ---------- */
+function taskWord(){
+  const w=pick(WORDS,0);const out=h('div',{});
+  const card=h('div',{class:'card'},
+    h('div',{class:'eyebrow'},'Word of the day · '+w.pos),h('div',{class:'bigword'},w.word),
+    h('div',{class:'say'},'bolo: '+w.say),h('p',{},w.hi),h('p',{class:'muted'},'"'+w.ex+'"'),
+    h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>speak(w.word)},icon('speaker'),'Word suno'),h('button',{class:'btn',type:'button',onclick:()=>speak(w.word,0.6)},icon('turtle'),'Dheere'),h('button',{class:'btn',type:'button',onclick:()=>speak(w.ex)},icon('speaker'),'Example')));
+  const comp=composer({id:'word',placeholder:'Is word se apna ek sentence bolo',hint:'Mic dabao ya type karo. Apni life ka sentence banao.',enterSends:true,onSend:async(text,c)=>{
+    c.busy(true);c.note('Coach check kar raha hai...');out.replaceChildren(h('div',{class:'dots','aria-label':'Soch raha hoon'},h('i'),h('i'),h('i')));
+    try{
+      const r=await coachJSON(ctx()+'\nTarget word: "'+w.word+'" (meaning: '+w.hi+').\nLearner sentence: "'+text+'"\nReply with only JSON: {"ok": true or false (true when the sentence is grammatical and uses the word correctly), "fixed": "natural corrected sentence (same as learner if already correct)", "why": "one or two short sentences on the main fix or praise", "example": "one more natural example with the word"}');
+      out.replaceChildren(h('div',{class:'card fb'},
+        h('span',{class:'verdict '+(r.ok?'ok':'no')},icon(r.ok?'check':'star'),r.ok?'Bilkul sahi':'Thoda sudhaar'),
+        h('div',{class:'fixed'},h('div',{},h('div',{class:'lbl'},'Aise bolo'),h('p',{},String(r.fixed||text))),speakBtn(String(r.fixed||text))),
+        r.why?h('p',{},String(r.why)):null,
+        r.example?h('p',{class:'muted'},'Ek aur example: '+String(r.example)):null));
+      markDone('w');
+    }catch(e){out.replaceChildren(h('div',{class:'notice'},errCopy(e)));}
+    c.busy(false);c.note('');
+  }});
+  const skip=h('div',{class:'row'},h('button',{class:'btn sm',type:'button',onclick:()=>{if(markDone('w')) toast('Done mark ho gaya');}},'Bina AI ke done mark karo'));
+  return h('div',{class:'view'},backBtn(),card,comp.el,out,aiNotice(),skip);
+}
+
+/* ---------- Task: shadowing ---------- */
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9'\s]/g,' ').replace(/\s+/g,' ').trim();
+function compare(target,said){
+  const T=target.split(/\s+/).filter(Boolean),cnt={};
+  norm(said).split(' ').filter(Boolean).forEach(w=>{cnt[w]=(cnt[w]||0)+1;});
+  const res=T.map(w=>{const k=norm(w).replace(/'/g,"'");if(cnt[k]>0){cnt[k]--;return {w,ok:true};}return {w,ok:false};});
+  return {res,acc:Math.round(100*res.filter(r=>r.ok).length/T.length)};
+}
+function taskShadow(){
+  let off=0;const wrap=h('div',{class:'view'});
+  function build(){
+    const s=pick(SHADOW,5+off);const out=h('div',{});
+    const card=h('div',{class:'card'},h('div',{class:'eyebrow'},'Pehle suno, phir wahi bolo'),h('div',{class:'sent'},s),
+      h('div',{class:'row'},h('button',{class:'btn primary',type:'button',onclick:()=>speak(s)},icon('speaker'),'Suno'),h('button',{class:'btn',type:'button',onclick:()=>speak(s,0.6)},icon('turtle'),'Dheere suno')));
+    const comp=composer({id:'shadow'+off,placeholder:'Sentence repeat karo (mic ya voice typing)',hint:'Mic dabakar sentence bolo. Jo words sahi pakde gaye woh hare dikhenge.',enterSends:true,onSend:(text,c)=>{
+      const r=compare(s,text);
+      out.replaceChildren(h('div',{class:'card fb'},
+        h('span',{class:'verdict '+(r.acc>=70?'ok':'no')},icon(r.acc>=70?'check':'star'),r.acc+'% match'),
+        h('div',{class:'words'},r.res.map(x=>h('span',{class:x.ok?'ok':'miss'},x.w))),
+        h('p',{class:'muted'},r.acc>=70?'Badhiya! Ab speed badhao aur bina dekhe bolo.':'Red words dobara suno aur phir bolo.'),
+        h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{off++;wrap.replaceChildren(backBtn(),...build());}},'Agla sentence'))));
+      if(r.acc>=70) markDone('s');
+    }});
+    return [card,comp.el,out];
+  }
+  wrap.append(backBtn(),...build());
+  return wrap;
+}
+
+/* ---------- Task: translate ---------- */
+function taskTrans(){
+  let off=0;const wrap=h('div',{class:'view'});
+  function build(){
+    const t=pick(TRANS,2+off);const out=h('div',{});
+    const card=h('div',{class:'card'},h('div',{class:'eyebrow'},'Isko English mein bolo'),h('div',{class:'sent'},t.hi),h('p',{class:'muted'},'Word-to-word nahi, poora matlab bolo.'));
+    const comp=composer({id:'trans'+off,placeholder:'Apna English sentence bolo ya likho',enterSends:true,hint:'Mic ya voice typing use karo.',onSend:async(text,c)=>{
+      c.busy(true);c.note('Coach check kar raha hai...');out.replaceChildren(h('div',{class:'dots'},h('i'),h('i'),h('i')));
+      try{
+        const r=await coachJSON(ctx()+'\nThe learner had to say this Hindi/Hinglish sentence in English: "'+t.hi+'"\nLearner English: "'+text+'"\nReply with only JSON: {"ok": true or false (true when the meaning is conveyed with at most tiny errors), "fixed": "the learner sentence corrected", "model": "the most natural English for the original sentence", "why": "one or two short sentences on the main mistake or praise"}');
+        out.replaceChildren(h('div',{class:'card fb'},
+          h('span',{class:'verdict '+(r.ok?'ok':'no')},icon(r.ok?'check':'star'),r.ok?'Sahi pakda':'Thoda sudhaar'),
+          h('div',{class:'fixed'},h('div',{},h('div',{class:'lbl'},'Natural English'),h('p',{},String(r.model||t.en))),speakBtn(String(r.model||t.en))),
+          r.fixed&&String(r.fixed).trim()!==text.trim()?h('p',{},h('span',{class:'lbl'},'Tumhara sentence sudhra: '),String(r.fixed)):null,
+          r.why?h('p',{class:'muted'},String(r.why)):null,
+          h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{off++;wrap.replaceChildren(backBtn(),...build());}},'Agla sentence'))));
+        markDone('t');
+      }catch(e){out.replaceChildren(h('div',{class:'notice'},errCopy(e)));}
+      c.busy(false);c.note('');
+    }});
+    return [card,comp.el,out,aiNotice()];
+  }
+  wrap.append(backBtn(),...build());
+  return wrap;
+}
+
+/* ---------- Task: 60-second talk ---------- */
+function countFillers(t){const m=t.toLowerCase().match(/\b(um+|uh+|erm+|hmm+|you know|i mean|basically|actually|like)\b/g);return m?m.length:0;}
+function taskTalk(){
+  const topic=pick(TOPICS,3);let started=0,timer=null,running=false;
+  const clock=h('div',{class:'clock',role:'timer'},'01:00');
+  const startBtn=h('button',{class:'btn primary',type:'button'},icon('timer'),'Timer shuru karo');
+  const out=h('div',{});
+  const comp=composer({id:'talk',rows:5,placeholder:'Yahan bolo ya likho. 60 second tak bolte raho.',hint:'Timer shuru karke bolna shuru karo. Rukna mat, galti ho toh bhi aage badho.',sendLabel:'Feedback lo',onSend:async(text,c)=>{
+    const words=text.split(/\s+/).filter(Boolean).length;
+    if(words<8){c.note('Thoda aur bolo (kam se kam 8-10 words).');return;}
+    clearInterval(timer);running=false;
+    const elapsed=started?Math.min(180,(Date.now()-started)/1000):0;
+    c.busy(true);c.note('Coach tumhara talk sun raha hai...');out.replaceChildren(h('div',{class:'dots'},h('i'),h('i'),h('i')));
+    try{
+      const r=await coachJSON(ctx()+'\nTopic: "'+topic+'". The learner spoke for about '+Math.round(elapsed||60)+' seconds. Transcript: "'+text+'"\nGive a speaking report. Reply with only JSON: {"scores":{"fluency":0-10,"grammar":0-10,"vocabulary":0-10,"clarity":0-10},"fixed":"the whole transcript rewritten in correct natural English, keeping the learner ideas","mistakes":[{"wrong":"short wrong phrase","right":"corrected phrase","why":"short reason"}] (at most 5, the most important),"better_phrases":["2-3 natural phrases the learner could use on this topic"],"praise":"one specific sentence of praise","next_goal":"one concrete goal for tomorrow"}');
+      const ms=Array.isArray(r.mistakes)?r.mistakes.slice(0,5):[];
+      addMistakes(ms);
+      const sc=r.scores||{};const fill=countFillers(text);
+      const wpm=mic_used()&&elapsed>10?Math.round(words/(elapsed/60)):null;
+      out.replaceChildren(h('div',{class:'card fb'},
+        h('h3',{},'Tumhara report'),
+        h('div',{class:'scores'},scoreNode('Fluency',sc.fluency),scoreNode('Grammar',sc.grammar),scoreNode('Vocabulary',sc.vocabulary),scoreNode('Clarity',sc.clarity)),
+        h('p',{class:'muted'},words+' words'+(wpm?' · '+wpm+' words/min (achha speed 110-150)':'')+(fill?' · '+fill+' filler words (like, actually, you know...)':'')),
+        r.praise?h('p',{},String(r.praise)):null,
+        r.fixed?h('div',{class:'fixed'},h('div',{},h('div',{class:'lbl'},'Aise bolna tha'),h('p',{},String(r.fixed))),speakBtn(String(r.fixed))):null,
+        ms.length?h('div',{},h('div',{class:'lbl'},'Galtiyan (Galtiyan tab mein save ho gayi)'),ms.map(m=>mistNode({wrong:String(m.wrong||''),right:String(m.right||''),why:String(m.why||'')}))):null,
+        Array.isArray(r.better_phrases)&&r.better_phrases.length?h('div',{},h('div',{class:'lbl'},'Ye phrases try karo'),h('ul',{},r.better_phrases.slice(0,3).map(p=>h('li',{},String(p))))):null,
+        r.next_goal?h('p',{},h('b',{},'Kal ka goal: '),String(r.next_goal)):null));
+      dayRec(dkey()).secs+=Math.round(elapsed||60);save();
+      markDone('k');
+    }catch(e){out.replaceChildren(h('div',{class:'notice'},errCopy(e)));}
+    c.busy(false);c.note('');
+  }});
+  const mic_used=()=>comp.mic.used;
+  function tick(){
+    const rem=Math.max(0,60-(Date.now()-started)/1000);
+    const sec=Math.ceil(rem);clock.textContent=pad(Math.floor(sec/60))+':'+pad(sec%60);
+    if(rem<=0){clearInterval(timer);running=false;clock.textContent='00:00';clock.classList.add('over');comp.mic.stop();comp.note('Time up! Ab "Feedback lo" dabao.');startBtn.disabled=false;startBtn.lastChild.textContent='Dobara shuru karo';}
+  }
+  startBtn.addEventListener('click',()=>{
+    if(running) return;
+    running=true;started=Date.now();clock.classList.remove('over');clearInterval(timer);timer=setInterval(tick,250);tick();
+    startBtn.disabled=true;comp.mic.start();comp.ta.focus();
+  });
+  cleanups.push(()=>clearInterval(timer));
+  const card=h('div',{class:'card'},h('div',{class:'eyebrow'},'Aaj ka topic'),h('div',{class:'sent'},topic),
+    h('div',{class:'tip'},'Structure: shuruaat (ek line) → 3 points → ant (ek line). Words kam pad jaye toh "because", "for example" use karo.'),
+    h('div',{class:'row',style:'justify-content:space-between'},clock,startBtn));
+  return h('div',{class:'view'},backBtn(),card,comp.el,out,aiNotice());
+}
+
+/* ---------- Tutor ---------- */
+const chat={sid:null,items:[],userCount:0};
+function resetChat(sid){chat.sid=sid;chat.items=[];chat.userCount=0;}
+function rulesText(sc){
+  return 'You are "Coach", a warm, patient spoken-English coach for a Hindi-speaking learner in India. '+lvlNote()+'\nScenario: '+sc.desc+'. Stay in that role while chatting.\n'+ctx()+
+  '\nEvery message after this one is the learner\'s spoken sentence. Reply using EXACTLY these labels, each starting on a new line, in this order, with nothing before FIXED:\n'+
+  'FIXED: the learner\'s message corrected into natural English, one line. Write only OK if it was already correct.\n'+
+  'MISTAKES: up to 3 lines, each formatted as "- wrong part => corrected part | short reason in '+expl()+'". Write a single "-" if none.\n'+
+  'BETTER: one more natural, native-sounding way to say the same thing, or "-".\n'+
+  'TIP: one short tip in '+expl()+' (max 15 words), or "-".\n'+
+  'REPLY: your reply as the conversation partner, 1-3 short sentences, ending with ONE follow-up question.\n'+
+  'No markdown, no extra text. Your opening line was already: "'+sc.open+'"';
+}
+function buildTurns(sc,newText){
+  const done=chat.items.filter(i=>i.done).slice(-6);const t=[{role:'user',content:rulesText(sc)}];
+  done.forEach(i=>{t.push({role:'user',content:i.u});t.push({role:'assistant',content:i.raw});});
+  t.push({role:'user',content:newText});return t;
+}
+function pairNodes(item){
+  const me=h('div',{class:'b me'},item.u);
+  const corr=h('div',{class:'corr'});
+  const coachBody=h('div',{});
+  const coach=h('div',{class:'b coach'},coachBody);
+  function refresh(){
+    const p=parseTutor(item.raw);
+    const kids=[];
+    const fx=p.fixed.trim();
+    if(!fx){kids.push(h('div',{class:'dots'},h('i'),h('i'),h('i')));}
+    else if(/^ok\b/i.test(fx)){kids.push(h('div',{class:'perfect'},'Bilkul sahi! Ek dum natural sentence.'));}
+    else{kids.push(h('div',{class:'fixed'},h('div',{},h('div',{class:'lbl'},'Aise bolo'),h('p',{},fx)),speakBtn(fx)));}
+    const ms=parseMist(p.mistakes);ms.forEach(m=>kids.push(mistNode(m)));
+    if(p.better&&p.better!=='-') kids.push(h('p',{},h('span',{class:'lbl'},'Aur natural: '),p.better));
+    if(p.tip&&p.tip!=='-') kids.push(h('p',{class:'muted'},p.tip));
+    corr.replaceChildren(...kids);
+    if(p.reply){coachBody.replaceChildren(h('span',{},p.reply));if(item.done&&!coach.querySelector('.spk')) coach.append(h('button',{class:'spk',type:'button','aria-label':'Reply suno',onclick:()=>speak(p.reply)},icon('speaker')));}
+    else coachBody.replaceChildren(h('div',{class:'dots'},h('i'),h('i'),h('i')));
+  }
+  refresh();
+  return {nodes:[me,corr,coach],refresh,remove(){[me,corr,coach].forEach(n=>n.remove());}};
+}
+function viewTutor(){
+  if(route.scenario&&route.scenario!==chat.sid) resetChat(route.scenario);
+  if(!chat.sid) resetChat('free');
+  const sc=SCEN.find(s=>s.id===chat.sid)||SCEN[0];
+  const todaySid=pick(SCEN,1).id;
+  const chips=h('div',{class:'chip-row',role:'group','aria-label':'Scenario'},SCEN.map(s=>h('button',{class:'chip-btn',type:'button','aria-pressed':String(s.id===chat.sid),onclick:()=>{if(s.id!==chat.sid){resetChat(s.id);go('tutor');}}},s.name)));
+  const goal=h('div',{class:'muted',style:'font-size:14px'});
+  function updGoal(){goal.textContent=chat.sid===todaySid?(isDone('r')?'Aaj ka roleplay goal poora hua.':'Aaj ka roleplay goal: '+Math.min(chat.userCount,4)+' / 4 messages'):'Level: '+LEVELS[S.level]+' · Explanation: '+(S.explain==='hinglish'?'Hinglish':'English');}
+  updGoal();
+  const list=h('div',{class:'chatlist','aria-live':'polite'});
+  const open=h('div',{class:'b coach'},h('span',{},sc.open),h('button',{class:'spk',type:'button','aria-label':'Suno',onclick:()=>speak(sc.open)},icon('speaker')));
+  list.append(open);
+  const pairs=new Map();
+  chat.items.forEach(it=>{const p=pairNodes(it);pairs.set(it,p);list.append(...p.nodes);});
+  const end=h('div',{style:'height:1px'});
+  const scrollEnd=()=>{try{end.scrollIntoView({block:'end',behavior:'auto'});}catch(e){}};
+  let busy=false;
+  const comp=composer({id:'chat',rows:2,sticky:true,enterSends:true,placeholder:'Kuch bhi bolo ya likho...',hint:'Mic dabao ya keyboard ke voice typing se bolo. Hindi words aaye toh bhi chalega.',onSend:async(text,c)=>{
+    if(busy) return;
+    if(!aiReady()){toast(errCopy({code:'no_key'}));return;}
+    busy=true;c.busy(true);c.set('');c.note('');
+    const item={u:text,raw:'',done:false};
+    const p=pairNodes(item);list.append(...p.nodes);scrollEnd();
+    try{
+      const res=await coachChat(buildTurns(sc,text),{onText:({text:t})=>{item.raw=t;p.refresh();scrollEnd();}});
+      item.raw=res.text;item.done=true;chat.items.push(item);chat.userCount++;
+      const pr=parseTutor(item.raw);p.refresh();
+      const ms=parseMist(pr.mistakes);addMistakes(ms);
+      S.counts.chat=(S.counts.chat||0)+1;
+      const perfect=/^ok\b/i.test(pr.fixed.trim());if(perfect) S.counts.perfect=(S.counts.perfect||0)+1;
+      addXP(perfect?7:4);
+      if(chat.sid===todaySid&&chat.userCount>=4) markDone('r');
+      updGoal();
+      if(S.autoSpeak&&pr.reply) speak(pr.reply);
+    }catch(e){
+      p.remove();c.set(text);toast(errCopy(e));
+    }
+    busy=false;c.busy(false);scrollEnd();
+  }});
+  const bar=h('div',{class:'row',style:'justify-content:space-between'},goal,
+    h('button',{class:'btn sm',type:'button',onclick:()=>{resetChat(chat.sid);go('tutor');}},icon('swap'),'Naya chat'));
+  return h('div',{class:'view'},h('h2',{},'Coach'),chips,bar,aiNotice(),list,end,comp.el);
+}
+
+/* ---------- Notebook ---------- */
+function viewNotebook(){
+  const wrap=h('div',{class:'view'});
+  const active=S.mistakes.filter(m=>!m.done),mastered=S.mistakes.filter(m=>m.done);
+  wrap.append(h('div',{class:'row',style:'justify-content:space-between'},h('h2',{},'Meri galtiyan'),
+    active.length?h('button',{class:'btn primary',type:'button',onclick:()=>{wrap.replaceChildren(flashcards(active.slice(0,10)));}},icon('book'),'Revise karo ('+Math.min(active.length,10)+')'):null));
+  if(!S.mistakes.length){
+    wrap.append(h('div',{class:'card'},h('h3',{},'Abhi kuch save nahi hua'),h('p',{class:'muted'},'Coach se baat karo ya 60 second talk karo. Jo galtiyan pakdi jayengi woh yahan jama hongi, taaki tum unhe dobara revise kar sako.'),
+      h('div',{class:'row'},h('button',{class:'btn primary',type:'button',onclick:()=>go('tutor')},'Coach se baat karo'))));
+    return wrap;
+  }
+  const mk=m=>h('div',{class:'nbi'+(m.done?' mastered':'')},
+    h('div',{class:'txt'},mistNode({wrong:m.wrong,right:m.right,why:m.why})),
+    h('div',{class:'row',style:'flex-wrap:nowrap'},speakBtn(m.right),
+      h('button',{class:'btn sm',type:'button',onclick:()=>{m.done=!m.done;if(m.done) addXP(2);else save();go('notebook');}},m.done?'Wapas':'Yaad hai')));
+  wrap.append(h('div',{class:'nb'},active.map(mk)));
+  if(mastered.length) wrap.append(h('div',{class:'lbl'},'Yaad ho gayi ('+mastered.length+')'),h('div',{class:'nb'},mastered.slice(0,20).map(mk)));
+  return wrap;
+}
+function flashcards(deck){
+  let i=0;const box=h('div',{class:'view'});
+  function show(){
+    if(i>=deck.length){box.replaceChildren(h('div',{class:'card'},h('h3',{},'Revision poora!'),h('p',{class:'muted'},'Shabaash. Jo yaad nahi hue woh agli baar phir aayenge.'),h('div',{class:'row'},h('button',{class:'btn primary',type:'button',onclick:()=>go('notebook')},'Wapas jao'))));return;}
+    const m=deck[i];
+    const front=h('div',{class:'card flash'},h('div',{class:'eyebrow'},'Card '+(i+1)+' / '+deck.length),h('p',{},'Isko sahi karke bolo:'),h('div',{class:'sent'},m.wrong),
+      h('button',{class:'btn primary',type:'button',onclick:()=>{
+        box.replaceChildren(h('div',{class:'card flash'},h('div',{class:'eyebrow'},'Card '+(i+1)+' / '+deck.length),
+          h('div',{class:'fixed'},h('div',{},h('div',{class:'lbl'},'Sahi'),h('p',{},m.right)),speakBtn(m.right)),m.why?h('p',{class:'muted'},m.why):null,
+          h('div',{class:'row'},h('button',{class:'btn good',type:'button',onclick:()=>{m.done=true;addXP(2);i++;show();}},icon('check'),'Yaad hai'),h('button',{class:'btn',type:'button',onclick:()=>{i++;show();}},'Phir dekhna'))));
+      }},'Jawab dekho'));
+    box.replaceChildren(front);
+  }
+  show();return box;
+}
+
+/* ---------- Progress ---------- */
+const BADGES=[
+ ['Pehla kadam','Pehla XP kamaya',()=>S.xp>0],['3 din ki streak','Lagatar 3 din',()=>S.best>=3],['Hafte bhar','Lagatar 7 din',()=>S.best>=7],['Mahine bhar','Lagatar 30 din',()=>S.best>=30],
+ ['Bol bachchan','5 baar 60 sec talk',()=>(S.counts.k||0)>=5],['Chatterbox','Coach se 50 messages',()=>(S.counts.chat||0)>=50],
+ ['Perfect line','5 bilkul sahi sentences',()=>(S.counts.perfect||0)>=5],['Galti sudhaar','10 galtiyan yaad ki',()=>S.mistakes.filter(m=>m.done).length>=10]
+];
+function seg(opts,val,on,label){
+  return h('div',{class:'seg',role:'group','aria-label':label},opts.map(o=>h('button',{class:'chip-btn',type:'button','aria-pressed':String(o[0]===val),onclick:()=>{on(o[0]);render();}},o[1])));
+}
+function voicePrompt(){
+  return 'You are my spoken-English coach. I am a Hindi speaker from India at '+S.level+' level, practising speaking out loud.\n\nRules for every turn:\n1. Talk with me like a friendly partner. Keep your replies to 2-3 short sentences and end with one question.\n2. After each of my answers, first say the corrected version ("You can say: ..."), then name at most two mistakes and explain briefly in simple Hinglish.\n3. If I use Hindi words, tell me the English word.\n4. I am speaking, so ignore punctuation. Focus on grammar, word choice, natural phrasing and pronunciation hints.\n5. Every 5 turns, give me a score out of 10 and one thing to improve.\n6. Start by asking which scenario I want: free talk, job interview, office meeting, restaurant, airport or phone call.';
+}
+function viewProgress(){
+  const L=level();const keys=[];for(let i=6;i>=0;i--) keys.push(new Date(Date.now()-i*864e5));
+  const vals=keys.map(d=>(S.days[dkey(d)]||{xp:0}).xp);const mx=Math.max(100,...vals);
+  const secs=Object.values(S.days).reduce((a,d)=>a+(d.secs||0),0);
+  const bars=h('div',{class:'bars',role:'img','aria-label':'Pichle 7 din ka XP: '+vals.join(', ')},keys.map((d,i)=>h('div',{class:'bar'},h('small',{},String(vals[i])),h('div',{class:'col'+(vals[i]?'':' zero'),style:'height:'+Math.max(3,Math.round(vals[i]/mx*100))+'%'}),h('small',{},d.toLocaleDateString('en-IN',{weekday:'short'}).slice(0,2)))));
+  const stats=h('div',{class:'stats'},
+    h('div',{class:'stat'},h('b',{},String(curStreak())),h('span',{},'din ki streak')),
+    h('div',{class:'stat'},h('b',{},String(S.best||0)),h('span',{},'best streak')),
+    h('div',{class:'stat'},h('b',{},String(S.xp)),h('span',{},'total XP')),
+    h('div',{class:'stat'},h('b',{},Math.round(secs/60)+'m'),h('span',{},'talk time')));
+  const lv=h('div',{class:'card'},h('div',{class:'row',style:'justify-content:space-between'},h('h3',{},'Level '+L.n),h('span',{class:'muted'},L.next+' XP baaki')),h('div',{class:'prog'},h('i',{style:'width:'+L.pct+'%'})));
+  const week=h('div',{class:'card'},h('h3',{},'Pichle 7 din'),bars);
+  const bd=h('div',{class:'card'},h('h3',{},'Badges'),h('div',{class:'badges'},BADGES.map(b=>{const on=b[2]();return h('div',{class:'badge'+(on?' on':'')},h('b',{},b[0]),h('span',{},on?'Mil gaya':b[1]));})));
+  const setc=h('div',{class:'card'},h('h3',{},'Setup'),
+    h('div',{class:'set'},h('span',{class:'lbl'},'Tumhara level'),seg([['beginner','Beginner'],['intermediate','Intermediate'],['advanced','Advanced']],S.level,v=>{S.level=v;save();},'Level')),
+    h('div',{class:'set'},h('span',{class:'lbl'},'Galti kis bhasha mein samjhayein'),seg([['hinglish','Hinglish'],['english','English']],S.explain,v=>{S.explain=v;save();},'Explanation language')),
+    h('div',{class:'set'},h('span',{class:'lbl'},'Accent (awaaz aur mic)'),seg([['en-IN','India'],['en-GB','UK'],['en-US','US']],S.accent,v=>{S.accent=v;save();speak('Hello, nice to meet you.');},'Accent')),
+    h('div',{class:'set'},h('span',{class:'lbl'},'Coach ki speed'),seg([[0.75,'Slow'],[0.9,'Normal'],[1.05,'Fast']],S.rate,v=>{S.rate=v;save();speak('This is how fast I speak.');},'Speech speed')),
+    h('div',{class:'set'},h('span',{class:'lbl'},'Coach ka reply khud bole'),seg([[true,'On'],[false,'Off']],S.autoSpeak,v=>{S.autoSpeak=v;save();},'Auto speak')));
+  const pr=h('pre',{class:'prompt',id:'vp'},voicePrompt());
+  const copyBtn=h('button',{class:'btn',type:'button',onclick:async()=>{try{await navigator.clipboard.writeText(voicePrompt());toast('Prompt copy ho gaya');}catch(e){const r=document.createRange();r.selectNodeContents(pr);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Select ho gaya, ab copy karein');}}},icon('copy'),'Prompt copy karo');
+  const vp=h('div',{class:'card'},h('h3',{},'Claude voice prompt'),h('p',{class:'muted'},'Is page ka mic chale ya na chale, Claude app ke voice mode mein asli baatcheet practice ke liye ye prompt paste karo.'),pr,h('div',{class:'row'},copyBtn));
+  const keyIn=h('input',{id:'api-key',class:'ta',type:'password',placeholder:'sk-ant-...',autocomplete:'off',spellcheck:'false','aria-label':'Claude API key',value:S.apiKey||'',style:'flex:1;min-width:0'});
+  const keyNote=h('div',{class:'cnote'},aiReady()?'Key saved hai.':'Abhi key nahi hai.');
+  const saveKey=h('button',{class:'btn primary sm',type:'button',onclick:()=>{S.apiKey=keyIn.value.trim();save();syncNotices();keyNote.textContent=S.apiKey?'Key save ho gayi.':'Key hata di.';toast(S.apiKey?'Key save ho gayi':'Key hata di');}},'Save');
+  const testKey=h('button',{class:'btn sm',type:'button',onclick:async()=>{S.apiKey=keyIn.value.trim();save();syncNotices();keyNote.textContent='Test ho raha hai...';try{await callClaude('Reply with the single word OK.',{tier:'quick',max:10});keyNote.textContent='Key kaam kar rahi hai.';}catch(e){keyNote.textContent=errCopy(e);}}},'Test karo');
+  const adv=h('details',{},h('summary',{class:'muted',style:'min-height:36px;cursor:pointer'},'Advanced: model names'),
+    h('div',{class:'set',style:'margin-top:8px'},
+      h('label',{class:'lbl',for:'m-quick'},'Chat model (khali = claude-haiku-5-5)'),h('input',{id:'m-quick',class:'ta',value:S.modelQuick||'',placeholder:'claude-haiku-5-5',onchange:e=>{S.modelQuick=e.target.value.trim();save();}}),
+      h('label',{class:'lbl',for:'m-main'},'Report model (khali = claude-sonnet-5-5)'),h('input',{id:'m-main',class:'ta',value:S.modelMain||'',placeholder:'claude-sonnet-5-5',onchange:e=>{S.modelMain=e.target.value.trim();save();}})));
+  const keyCard=h('div',{class:'card'},h('h3',{},'Claude API key'),
+    h('p',{class:'muted'},'console.anthropic.com par account banao, credits daalo aur "API keys" se key banao. Key sirf is phone ke browser mein save hoti hai aur seedha Anthropic ko jati hai. Kisi ko mat dikhana.'),
+    h('div',{class:'row',style:'flex-wrap:nowrap'},keyIn,saveKey,testKey),keyNote,adv);
+  const installCard=h('div',{class:'card'},h('h3',{},'Phone par app ki tarah install'),
+    h('p',{class:'muted'},'Chrome mein menu (teen dots) kholo aur "Install app" ya "Add to Home screen" dabao. Phir Bolo icon se full-screen app khulega.'),
+    deferredInstall?h('div',{class:'row'},h('button',{class:'btn primary',type:'button',onclick:async()=>{try{deferredInstall.prompt();await deferredInstall.userChoice;}catch(e){}deferredInstall=null;go('progress');}},'Abhi install karo')):null);
+  let armed=false;
+  const reset=h('button',{class:'btn sm',type:'button'},'Saara progress reset karo');
+  reset.addEventListener('click',()=>{
+    if(!armed){armed=true;reset.textContent='Pakka? Dobara dabao';setTimeout(()=>{armed=false;reset.textContent='Saara progress reset karo';},3500);return;}
+    const k=S.apiKey,mq=S.modelQuick,mm=S.modelMain;S=DEF();S.apiKey=k;S.modelQuick=mq;S.modelMain=mm;save();toast('Reset ho gaya');go('progress');refreshChips();
+  });
+  return h('div',{class:'view'},h('h2',{},'Progress'),stats,lv,week,bd,keyCard,setc,installCard,vp,h('div',{class:'row'},reset));
+}
+
+/* ---------- boot ---------- */
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;});
+renderTop();render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+})();
+</script>
+</body></html>
